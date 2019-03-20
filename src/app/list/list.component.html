@@ -1,0 +1,10 @@
+<ion-list>
+  <ion-list-header color="dark">Liste de Films</ion-list-header>
+  <ion-item *ngIf="films.length <= 0">
+    <ion-label>No Item in Array</ion-label>
+  </ion-item>
+  <ion-item *ngFor="let film of films"  (click)="navig(film.title)" button>
+    <ion-ripple-effect></ion-ripple-effect>
+    <ion-label>{{film.title}}</ion-label>
+  </ion-item>
+</ion-list>
