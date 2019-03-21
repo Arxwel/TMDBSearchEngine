@@ -1,8 +1,25 @@
-<app-header>Test</app-header>
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button color="primary">Random</ion-button>
+    </ion-buttons>
+    <ion-title>TMDB Explorer</ion-title>
+  </ion-toolbar> 
+  <ion-searchbar (ionChange)="getMovies($event)"> </ion-searchbar>
+</ion-header>
 <ion-content
   [scrollEvents]="true"
   (ionScrollStart)="logScrollStart()"
   (ionScroll)="logScrolling($event)"
   (ionScrollEnd)="logScrollEnd()">
-  <app-list></app-list>
+  <ion-list>
+    <ion-list-header color="dark">Liste de Films</ion-list-header>
+    <ion-item *ngIf="films.length <= 0">
+      <ion-label>No Item in Array</ion-label>
+    </ion-item>
+    <ion-item *ngFor="let film of films"  (click)="navig(film.title)" button>
+      <ion-ripple-effect></ion-ripple-effect>
+      <ion-label>{{film.title}}</ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
