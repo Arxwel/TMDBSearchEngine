@@ -1,38 +1,95 @@
-import { Component } from '@angular/core';
-import { Router, NavigationExtras } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { Movie } from '../model/movie';
+import { Component } from "@angular/core";
+import { Router, NavigationExtras } from "@angular/router";
+import { HttpClient } from "@angular/common/http";
+import { Movie, TMDBResponse } from "../model/movie";
+import { AlertController, LoadingController } from "@ionic/angular";
+import { apiKey } from "src/tmdb";
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  selector: "app-home",
+  templateUrl: "home.page.html",
+  styleUrls: ["home.page.scss"]
 })
 export class HomePage {
-  constructor(private readonly router: Router, private readonly http: HttpClient) {}
-  films: Movie[] = [{title: 'Alita : Battle Angel'}, {title: 'Mirai, ma petite soeur'}, {title: 'Captain Marvel'}];
+  films: Promise<Movie[]>;
+  film: Movie;
+  constructor(
+    private readonly router: Router,
+    private readonly http: HttpClient,
+    public alertController: AlertController,
+    public loadingController: LoadingController
+  ) {}
 
   getMovies(search: any): void {
-    console.log('yolo'); // search.target.value);
-    /*
-    $http({
-      method: 'GET',
-      url: 'http://api.themoviedb.org/3/search/movie',
-      params: { api_key: 'ebb02613ce5a2ae58fde00f4db95a9c1', query: search.target.value }
-    }).then(function successCallback(response) {
-        console.log(response);
-      }, function errorCallback(response) {
-        console.log(response);
-      });
-    */
+    let val: string = search.target.value.trim();
+    if (val.length < 3) {
+      this.films = Promise.resolve([]);
+    } else {
+      this.films = this.searchMovies(val);
+    }
   }
 
-  navig(film: string): void {
-    let navigationExtras: NavigationExtras = {
+  async getRandomMovie() {
+    this.discoverMovies().then(value => {
+      this.film = value[Math.floor(Math.random() * value.length)];
+      this.presentAlertRandom();
+    });
+  }
+
+  private discoverMovies(): Promise<Movie[]> {
+    return this.askTMDB("discover", {});
+  }
+  async presentAlertRandom() {
+    const alert = await this.alertController.create({
+      header: this.film.title,
+      message: this.film.overview,
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+          cssClass: "secondary"
+        },
+        {
+          text: "Show Details",
+          handler: () => {
+            this.showDetails(this.film);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private searchMovies(search: string): Promise<Movie[]> {
+    return this.askTMDB("search", { query: search });
+  }
+
+  private async askTMDB(api: string, params: object): Promise<Movie[]> {
+    const loading = await this.loadingController.create({
+      message: "Please Wait..."
+    });
+    await loading.present();
+    const { results } = await this.http
+      .get<TMDBResponse>(`http://api.themoviedb.org/3/${api}/movie`, {
+        params: { api_key: apiKey, ...params }
+      })
+      .toPromise();
+    await loading.dismiss();
+    return results;
+  }
+
+  showDetails(film: Movie): void {
+    const navigationExtras: NavigationExtras = {
+      state: film
+      /*,
       queryParams: {
-          'film': film
+          'title': film.title,
+          'img': film.poster_path,
+          'date': film.release_date,
+          'overview': film.overview,
       }
-  };
-    this.router.navigate(['/details'], navigationExtras);
+      */
+    };
+    this.router.navigate(["/details"], navigationExtras);
   }
 }

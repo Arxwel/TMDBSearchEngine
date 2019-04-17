@@ -8,5 +8,16 @@
 </ion-header>
 
 <ion-content padding>
-<ion-title>{{movie}}</ion-title>
+
+    <ion-card>
+        <ion-card-header style='background-image: url({{movie.backdrop_path}};'>
+          <ion-card-subtitle>{{movie.release_date}}</ion-card-subtitle>
+          <ion-card-title>{{movie.title}}</ion-card-title>
+          <ion-img src='{{movie.poster_path}}'></ion-img>
+        </ion-card-header>
+        <ion-card-content>
+          <h3 *ngIf="(movie.overview)">Overview</h3>
+          {{movie.overview}}
+        </ion-card-content>
+      </ion-card>
 </ion-content>
